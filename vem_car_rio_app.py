@@ -87,16 +87,30 @@ with tab3:
     with col1:
         st.subheader(f"🚕 Passageiros ({len(st.session_state.passageiros)})")
         for p in reversed(st.session_state.passageiros):
+            # CORREÇÃO AQUI - usa .get pra não quebrar com dados antigos
+            p_nome = p.get('nome', 'Passageiro')
+            p_valor = p.get('valor', '')
+            p_origem = p.get('origem', '')
+            p_destino = p.get('destino', '')
+            p_hora = p.get('hora', '')
+            p_whats = p.get('whats', '')
             st.markdown(f"""<div style="background:#1F1F1F;padding:12px;border-radius:12px;margin:8px 0;border-left:5px solid #FF6F00;color:white">
-            <b>{p['nome']}</b> - {p['valor']}<br>📍 {p['origem']} → {p['destino']}<br>🕐 {p['hora']} | 📱 {p['whats']}<br>
-            <a href="https://wa.me/55{p['whats']}?text=Oi%20{p['nome']}!%20Vi%20seu%20pedido%20no%20VEM%20CAR%20RIO" target="_blank" style="color:#FF8C00">Chamar no Zap</a></div>""", unsafe_allow_html=True)
+            <b>{p_nome}</b> - {p_valor}<br>📍 {p_origem} → {p_destino}<br>🕐 {p_hora} | 📱 {p_whats}<br>
+            <a href="https://wa.me/55{p_whats}?text=Oi%20{p_nome}!%20Vi%20seu%20pedido%20no%20VEM%20CAR%20RIO" target="_blank" style="color:#FF8C00">Chamar no Zap</a></div>""", unsafe_allow_html=True)
     with col2:
         st.subheader(f"🚗 Motoristas ({len(st.session_state.motoristas)})")
         for m in reversed(st.session_state.motoristas):
-            estrelas = "⭐" * m['nota']
+            m_nota = m.get('nota', 5)
+            estrelas = "⭐" * int(m_nota)
+            m_nome = m.get('nome', 'Motorista')
+            m_modelo = m.get('modelo', '')
+            m_placa = m.get('placa', '')
+            m_valor = m.get('valor', '')
+            m_hora = m.get('hora', '')
+            m_whats = m.get('whats', '')
             st.markdown(f"""<div style="background:#1F1F1F;padding:12px;border-radius:12px;margin:8px 0;border-left:5px solid #FF8C00;color:white">
-            <b>{m['nome']}</b> {estrelas}<br>🚗 {m['modelo']} - {m['placa']}<br>💰 {m['valor']} - 🕐 {m['hora']}<br>📱 {m['whats']}<br>
-            <a href="https://wa.me/55{m['whats']}?text=Oi%20{m['nome']}!%20Vi%20voce%20no%20VEM%20CAR%20RIO" target="_blank" style="color:#FF8C00">Chamar no Zap</a></div>""", unsafe_allow_html=True)
+            <b>{m_nome}</b> {estrelas}<br>🚗 {m_modelo} - {m_placa}<br>💰 {m_valor} - 🕐 {m_hora}<br>📱 {m_whats}<br>
+            <a href="https://wa.me/55{m_whats}?text=Oi%20{m_nome}!%20Vi%20voce%20no%20VEM%20CAR%20RIO" target="_blank" style="color:#FF8C00">Chamar no Zap</a></div>""", unsafe_allow_html=True)
 
 st.markdown("---")
-st.caption("🧡 v4.0 Laranja Metálico - VEM CAR RIO - Feito por você!")
+st.caption("🧡 v4.1 Corrigida - VEM CAR RIO - Feito por você!")
