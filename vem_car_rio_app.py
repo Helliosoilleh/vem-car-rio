@@ -1,58 +1,92 @@
 import streamlit as st
+import datetime
 
 st.set_page_config(page_title="VEM CAR RIO", page_icon="🚗", layout="centered")
 
 st.markdown("""
 <style>
-    .stButton>button { background-color: #FFD700; color: #000; font-weight: bold; border-radius: 12px; width: 100%; height: 50px; border: none; }
-    h1 { color: #0055A4; text-align: center; }
+    .stButton>button {
+        width: 100%;
+        height: 60px;
+        font-size: 20px !important;
+        font-weight: bold;
+        background-color: #FFD700;
+        color: black;
+        border-radius: 15px;
+        border: 2px solid black;
+    }
+    h1 { font-size: 32px !important; text-align: center; }
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<h1>🚗 VEM CAR RIO</h1><p style='text-align:center;'><i>Vem cá, Rio! Seu transporte da galera.</i></p>", unsafe_allow_html=True)
+if 'pedidos' not in st.session_state:
+    st.session_state.pedidos = []
 
-if 'corridas' not in st.session_state:
-    st.session_state.corridas = []
-if 'usuarios' not in st.session_state:
-    st.session_state.usuarios = []
+st.markdown("# 🚗 VEM CAR RIO v2.0")
+st.markdown("<p style='text-align:center'>Criado por você e por mim 💛</p>", unsafe_allow_html=True)
 
-aba = st.selectbox("O que você quer fazer?", ["🧍 Quero uma carona (Passageiro)", "🚙 Quero dirigir (Motorista)", "📝 Me cadastrar"])
+tab1, tab2 = st.tabs(["🚕 PEDIR CARONA", "📋 VER PEDIDOS"])
 
-if aba == "📝 Me cadastrar":
-    st.subheader("Cadastro VEM CAR RIO")
-    nome = st.text_input("Seu nome")
-    zap = st.text_input("Seu WhatsApp (com DDD)")
-    tipo = st.radio("Você quer ser:", ["Passageiro", "Motorista", "Os dois"])
-    if st.button("ENTRAR PRO VEM CAR RIO"):
-        if nome and zap:
-            st.session_state.usuarios.append({"nome": nome, "zap": zap, "tipo": tipo})
-            st.success(f"Bem-vindo(a), {nome}! Você já faz parte do VEM CAR RIO! 💛💙")
-            st.balloons()
-        else:
-            st.warning("Preenche nome e zap!")
-
-elif aba == "🧍 Quero uma carona (Passageiro)":
-    st.subheader("Pedir um VEM CAR")
-    origem = st.text_input("De onde você está? Ex: Madureira")
-    destino = st.text_input("Para onde vai? Ex: Copacabana")
-    obs = st.text_area("Observação (opcional)")
+with tab1:
+    st.subheader("Pra onde vamos?")
+    origem = st.text_input("De onde você está?", placeholder="Ex: Madureira")
+    destino = st.text_input("Para onde vai?", placeholder="Ex: Copacabana")
+    
     if st.button("🚨 CHAMAR VEM CAR AGORA"):
         if origem and destino:
-            nova = {"origem": origem, "destino": destino, "obs": obs, "status": "Aguardando motorista"}
-            st.session_state.corridas.append(nova)
-            st.success(f"Pronto! Pedido de {origem} para {destino} enviado para os motoristas! Fica de olho no WhatsApp.")
+            pedido = {
+                "origem": origem,
+                "destino": destino,
+                "hora": datetime.datetime.now().strftime("%H:%M"),
+                "data": datetime.datetime.now().strftime("%d/%m")
+            }
+            st.session_state.pedidos.append(pedido)
+            
+            st.markdown("""
+                <audio autoplay>
+                    <source src="https://www.soundjay.com/transportation/car-horn-01.mp3" type="audio/mpeg">
+                </audio>
+                <script>
+                    var msg = new SpeechSynthesisUtterance();
+                    msg.text = "Vem Car Rio!";
+                    msg.lang = "pt-BR";
+                    msg.rate = 0.9;
+                    msg.pitch = 1.2;
+                    window.speechSynthesis.speak(msg);
+                </script>
+            """, unsafe_allow_html=True)
+            
             st.balloons()
+            st.success(f"✅ PEDIDO FEITO! {origem} -> {destino}")
+            st.markdown(f"""
+            ### 🎉 MOTORISTA A CAMINHO!
+            **Clique aqui e chame no WhatsApp:**
+            👉 [CHAMAR NO WHATSAPP](https://wa.me/5521983734616?text=Oi!%20Quero%20carona%20de%20{origem}%20para%20{destino})
+            """)
         else:
-            st.warning("Coloca de onde e para onde!")
+            st.warning("Preenche os dois campos, amor!")
 
-else:
-    st.subheader("Corridas pedidas pela galera")
-    if not st.session_state.corridas:
-        st.info("Nenhum pedido no momento. Fica online!")
+with tab2:
+    st.subheader(f"Pedidos de hoje: {len(st.session_state.pedidos)}")
+    if not st.session_state.pedidos:
+        st.info("Nenhum pedido ainda. Seja o primeiro!")
     else:
-        for i, c in enumerate(reversed(st.session_state.corridas)):
-            st.markdown(f"**📍 {c['origem']} → {c['destino']}** | Obs: {c['obs']} | Status: {c['status']}")
-            if st.button(f"Aceitar corrida {i+1} - Chamar no Zap", key=f"btn_{i}"):
-                st.success("Corrida aceita! Aqui abriria o WhatsApp do passageiro.")
-
-st.caption("VEM CAR RIO v1.0 - Criado por você e por mim 🚀")
+        for i, p in enumerate(reversed(st.session_state.pedidos)):
+            st.markdown(f"""
+            <div style="background:#FFF9C4;padding:12px;border-radius:10px;margin:8px 0;border-left:5px solid #FFD700">
+                <b>🚗 {p['origem']} → {p['destino']}</b><br>
+                🕐 {p['hora']} - {p['data']}
+            </div>
+            """, unsafe_allow_html=True)
+    
+    if st.button("🔊 TESTAR GRITINHO"):
+        st.markdown("""
+            <script>
+                var msg = new SpeechSynthesisUtterance();
+                msg.text = "Vem Car Rio!";
+                msg.lang = "pt-BR";
+                window.speechSynthesis.speak(msg);
+            </script>
+            <audio autoplay><source src="https://www.soundjay.com/transportation/car-horn-01.mp3"></audio>
+        """, unsafe_allow_html=True)
+        st.toast("VEM CAR RIOOO! 🗣️")
