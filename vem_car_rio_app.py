@@ -3,14 +3,22 @@ import datetime
 import pandas as pd
 import os
 
-# CONFIGURA COM SUA LOGO
 st.set_page_config(page_title="VEM CAR RIO", page_icon="logo.png", layout="centered")
+
+# <<< PASSO 2 - COLEI AQUI PRA VOCÊ - ISSO FAZ VIRAR APP NO CELULAR >>>
+st.markdown("""
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#FF6F00">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="VEM CAR RIO">
+<link rel="apple-touch-icon" href="logo.png">
+""", unsafe_allow_html=True)
 
 st.markdown("""
 <style>
-   .stApp { background-color: #0E0E0E; }
+  .stApp { background-color: #0E0E0E; }
     h1, h2, h3, p, label { color: white!important; }
-   .stButton>button {
+  .stButton>button {
         width: 100%;
         height: 65px;
         font-size: 20px!important;
@@ -56,7 +64,6 @@ def carregar_motoristas():
         return pd.read_csv("motoristas.csv").to_dict('records')
     return []
 
-# TOPO COM SUA LOGO
 if os.path.exists("logo.png"):
     col1, col2, col3 = st.columns([1,2,1])
     with col2:
@@ -64,7 +71,7 @@ if os.path.exists("logo.png"):
 else:
     st.markdown("<h1 style='text-align:center; color:#FF6F00!important;'>🚗 VEM CAR RIO</h1>", unsafe_allow_html=True)
 
-st.markdown("<p style='text-align:center; color:#FF8C00!important; font-weight:bold;'>LARANJA METÁLICO E PRETO 💎 v6.0 OFICIAL</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align:center; color:#FF8C00!important; font-weight:bold;'>LARANJA METÁLICO E PRETO 💎 v6.1 APP</p>", unsafe_allow_html=True)
 st.markdown("<p style='text-align:center'>Central: (21) 99824-1550</p>", unsafe_allow_html=True)
 
 tab1, tab2, tab3 = st.tabs(["🚕 PASSAGEIRO", "🚗 MOTORISTA", "📋 CORRIDAS"])
@@ -122,4 +129,4 @@ with tab3:
             <b>{m.get('nome','')}</b> {estrelas}<br>🚗 {m.get('modelo','')} - {m.get('placa','')}<br>💰 {m.get('valor','')} - 🕐 {m.get('hora','')}<br>
             <a href="https://wa.me/55{m.get('whats','')}?text=Oi%20{m.get('nome','')}!%20Vi%20voce%20no%20VEM%20CAR%20RIO" target="_blank" style="color:#FF8C00">Chamar no Zap</a></div>""", unsafe_allow_html=True)
 
-st.caption("🧡 v6.0 OFICIAL - VEM CAR RIO - Com logo laranja metálico!")
+st.caption("🧡 v6.1 APP - VEM CAR RIO - Instalável no celular!")
