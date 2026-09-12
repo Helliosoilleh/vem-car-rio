@@ -46,23 +46,11 @@ with tab1:
                 <audio autoplay>
                     <source src="https://www.soundjay.com/transportation/car-horn-01.mp3" type="audio/mpeg">
                 </audio>
-                <script>
-                    var msg = new SpeechSynthesisUtterance();
-                    msg.text = "Vem Car Rio!";
-                    msg.lang = "pt-BR";
-                    msg.rate = 0.9;
-                    msg.pitch = 1.2;
-                    window.speechSynthesis.speak(msg);
-                </script>
             """, unsafe_allow_html=True)
             
             st.balloons()
             st.success(f"✅ PEDIDO FEITO! {origem} -> {destino}")
-            st.markdown(f"""
-            ### 🎉 MOTORISTA A CAMINHO!
-            **Clique aqui e chame no WhatsApp:**
-            👉 [CHAMAR NO WHATSAPP](https://wa.me/5521983734616?text=Oi!%20Quero%20carona%20de%20{origem}%20para%20{destino})
-            """)
+            st.markdown(f"### 🎉 MOTORISTA A CAMINHO!\n**Clique aqui e chame no WhatsApp:**\n👉 [CHAMAR NO WHATSAPP](https://wa.me/5521998241550?text=Oi!%20Quero%20carona%20de%20{origem}%20para%20{destino})")
         else:
             st.warning("Preenche os dois campos, amor!")
 
@@ -79,14 +67,8 @@ with tab2:
             </div>
             """, unsafe_allow_html=True)
     
-    if st.button("🔊 TESTAR GRITINHO"):
+    if st.button("🔊 TESTAR GRITINHO - VEM CAR RIO"):
         st.markdown("""
-            <script>
-                var msg = new SpeechSynthesisUtterance();
-                msg.text = "Vem Car Rio!";
-                msg.lang = "pt-BR";
-                window.speechSynthesis.speak(msg);
-            </script>
-            <audio autoplay><source src="https://www.soundjay.com/transportation/car-horn-01.mp3"></audio>
+            <audio autoplay><source src="https://www.soundjay.com/transportation/car-horn-01.mp3" type="audio/mpeg"></audio>
         """, unsafe_allow_html=True)
-        st.toast("VEM CAR RIOOO! 🗣️")
+        st.toast("VEM CAR RIOOO! 🗣️🚗")
