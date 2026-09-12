@@ -1,0 +1,16 @@
+{
+  "name": "VEM CAR RIO",
+  "short_name": "VEM CAR",
+  "description": "Carona laranja metálico e preto - Rio",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0E0E0E",
+  "theme_color": "#FF6F00",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
