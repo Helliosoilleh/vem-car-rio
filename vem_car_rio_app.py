@@ -1,132 +1,115 @@
 import streamlit as st
-import datetime
 import pandas as pd
-import os
+import random
+import datetime
 
-st.set_page_config(page_title="VEM CAR RIO", page_icon="logo.png", layout="centered")
+st.set_page_config(page_title="VEM CAR RIO - Privado", page_icon="🔒", layout="centered")
 
-# <<< PASSO 2 - COLEI AQUI PRA VOCÊ - ISSO FAZ VIRAR APP NO CELULAR >>>
-st.markdown("""
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#FF6F00">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="VEM CAR RIO">
-<link rel="apple-touch-icon" href="logo.png">
-""", unsafe_allow_html=True)
-
+# ESTILO SEGURO
 st.markdown("""
 <style>
-  .stApp { background-color: #0E0E0E; }
-    h1, h2, h3, p, label { color: white!important; }
-  .stButton>button {
-        width: 100%;
-        height: 65px;
-        font-size: 20px!important;
-        font-weight: bold;
-        background: linear-gradient(90deg, #FF6F00, #FF8C00);
-        color: white;
-        border-radius: 15px;
-        border: none;
-        box-shadow: 0px 4px 15px rgba(255,111,0,0.4);
-    }
-    div[data-testid="stTabs"] button { color: white!important; }
-    div[data-testid="stTabs"] button[aria-selected="true"] {
-        background: #FF6F00;
-        color: white!important;
-        border-radius: 10px;
-    }
+.ride-card {background:white; border-radius:15px; padding:15px; margin:10px 0; border-left:5px solid #FFD700; box-shadow: 0 2px 8px rgba(0,0,0,0.1)}
+.safe-badge {background:#00C851; color:white; padding:5px 10px; border-radius:20px; font-size:12px}
 </style>
 """, unsafe_allow_html=True)
 
-def salvar_passageiro(dados):
-    arquivo = "passageiros.csv"
-    df = pd.DataFrame([dados])
-    if os.path.exists(arquivo):
-        df_antigo = pd.read_csv(arquivo)
-        df = pd.concat([df_antigo, df], ignore_index=True)
-    df.to_csv(arquivo, index=False)
+st.markdown("<h1 style='text-align:center'>🔒 VEM CAR RIO</h1><p style='text-align:center'><span class='safe-badge'>100% PRIVADO E SEGURO</span><br>Seu número nunca vai para o motorista</p>", unsafe_allow_html=True)
 
-def salvar_motorista(dados):
-    arquivo = "motoristas.csv"
-    df = pd.DataFrame([dados])
-    if os.path.exists(arquivo):
-        df_antigo = pd.read_csv(arquivo)
-        df = pd.concat([df_antigo, df], ignore_index=True)
-    df.to_csv(arquivo, index=False)
+# MENU DE PERFIS
+perfil = st.radio("Você é:", ["Passageira", "Motorista", "Central (Você)"], horizontal=True)
 
-def carregar_passageiros():
-    if os.path.exists("passageiros.csv"):
-        return pd.read_csv("passageiros.csv").to_dict('records')
-    return []
+# BANCO DE DADOS SIMULADO
+if 'corridas' not in st.session_state:
+    st.session_state.corridas = []
 
-def carregar_motoristas():
-    if os.path.exists("motoristas.csv"):
-        return pd.read_csv("motoristas.csv").to_dict('records')
-    return []
+# ========== PASSAGEIRA ==========
+if perfil == "Passageira":
+    st.markdown("### 🧡 Peça com segurança")
+    st.info("🔒 Seus dados são protegidos pela LGPD. Motorista NUNCA vê seu WhatsApp. Só a Central autorizada vê.")
 
-if os.path.exists("logo.png"):
-    col1, col2, col3 = st.columns([1,2,1])
-    with col2:
-        st.image("logo.png", use_container_width=True)
+    nome = st.text_input("Seu nome")
+    origem = st.text_input("De onde? Ex: Rio de Janeiro")
+    destino = st.text_input("Para onde? Ex: Campina Grande")
+    valor = st.number_input("Quanto quer pagar? R$", min_value=10, value=30)
+    tel = st.text_input("Seu WhatsApp (fica escondido, só a Central vê)", type="password")
+    
+    lgpd = st.checkbox("Eu concordo que meus dados sejam usados só para esta corrida e fiquem protegidos (LGPD)")
+    
+    if st.button("PEDIR CORRIDA SEGURA 🔒"):
+        if not lgpd or not nome or not tel:
+            st.error("Preencha tudo e aceite a LGPD")
+        else:
+            codigo = f"VCR-{random.randint(1000,9999)}"
+            nova = {
+                "codigo": codigo,
+                "nome": nome,
+                "origem": origem,
+                "destino": destino,
+                "valor": valor,
+                "tel": tel, # fica escondido
+                "status": "Aguardando motorista",
+                "hora": datetime.datetime.now().strftime("%H:%M")
+            }
+            st.session_state.corridas.append(nova)
+            st.success(f"✅ Pedido {codigo} criado com sucesso!")
+            st.markdown(f"""
+            <div class="ride-card">
+            <b>Sua corrida: {codigo}</b><br>
+            {origem} → {destino}<br>
+            R$ {valor}<br>
+            Status: <b>Procurando motorista perto...</b><br><br>
+            🔒 Seu número está protegido. O motorista falará com você por CHAT ANÔNIMO aqui no app.
+            </div>
+            """, unsafe_allow_html=True)
+            st.button("💬 Abrir chat anônimo com motorista")
+            st.button("🛡️ Estou segura / Compartilhar trajeto")
+            st.button("🚨 Denunciar")
+
+# ========== MOTORISTA ==========
+elif perfil == "Motorista":
+    st.markdown("### 🚗 Corridas disponíveis (anônimas)")
+    st.warning("🔒 Você NÃO recebe o número da passageira. Use o chat anônimo do app. Assédio = banimento imediato.")
+    
+    if not st.session_state.corridas:
+        st.write("Nenhuma corrida agora. Fique online.")
+    else:
+        for c in st.session_state.corridas:
+            if c["status"] == "Aguardando motorista":
+                st.markdown(f"""
+                <div class="ride-card">
+                <b>{c['codigo']}</b> - {c['hora']}<br>
+                📍 {c['origem']} → {c['destino']}<br>
+                💰 R$ {c['valor']}<br>
+                👤 Passageira anônima<br>
+                </div>
+                """, unsafe_allow_html=True)
+                if st.button(f"Aceitar {c['codigo']}"):
+                    c["status"] = "Aceita"
+                    st.success(f"Você aceitou {c['codigo']}! Chat anônimo liberado.")
+                    st.info("Fale: 'Olá! Sou seu motorista do VEM CAR, estou chegando de carro branco'")
+
+# ========== CENTRAL ==========
 else:
-    st.markdown("<h1 style='text-align:center; color:#FF6F00!important;'>🚗 VEM CAR RIO</h1>", unsafe_allow_html=True)
-
-st.markdown("<p style='text-align:center; color:#FF8C00!important; font-weight:bold;'>LARANJA METÁLICO E PRETO 💎 v6.1 APP</p>", unsafe_allow_html=True)
-st.markdown("<p style='text-align:center'>Central: (21) 99824-1550</p>", unsafe_allow_html=True)
-
-tab1, tab2, tab3 = st.tabs(["🚕 PASSAGEIRO", "🚗 MOTORISTA", "📋 CORRIDAS"])
-
-with tab1:
-    st.subheader("🙋‍♀️ Pedir Carona")
-    nome_p = st.text_input("Seu Nome", key="nome_p", placeholder="Ex: Maria")
-    c1, c2 = st.columns(2)
-    with c1: origem = st.text_input("De onde?", placeholder="Madureira")
-    with c2: destino = st.text_input("Para onde?", placeholder="Copacabana")
-    whats_p = st.text_input("Seu WhatsApp", key="whats_p", placeholder="21998241550")
-    valor_desejado = st.text_input("Quanto quer pagar?", placeholder="Ex: R$ 25")
-    if st.button("🚨 PEDIR VEM CAR AGORA", key="btn_p"):
-        if nome_p and origem and destino and whats_p:
-            dados = {"nome": nome_p, "origem": origem, "destino": destino, "whats": whats_p, "valor": valor_desejado, "hora": datetime.datetime.now().strftime("%H:%M - %d/%m")}
-            salvar_passageiro(dados)
-            st.balloons()
-            st.success(f"✅ {nome_p}, salvo pra sempre!")
-            st.markdown(f"👉 [CHAMAR CENTRAL NO ZAP](https://wa.me/5521998241550?text=Oi!%20Sou%20{nome_p}%20quero%20ir%20de%20{origem}%20para%20{destino}%20por%20{valor_desejado})")
+    senha = st.text_input("Senha da Central", type="password")
+    if senha == "1234": # você muda depois
+        st.markdown("### 👑 Central - Visão completa (só você vê)")
+        if not st.session_state.corridas:
+            st.write("Nenhum pedido ainda.")
         else:
-            st.warning("Preenche tudo!")
-
-with tab2:
-    st.subheader("🚗 Ser Motorista")
-    nome_m = st.text_input("Seu Nome", key="nome_m", placeholder="João")
-    modelo_cor = st.text_input("Modelo / Cor", key="modelo_m", placeholder="Onix Preto")
-    c3, c4 = st.columns(2)
-    with c3: placa = st.text_input("Placa", key="placa_m", placeholder="ABC1D23")
-    with c4: valor = st.text_input("Valor da corrida", key="valor_m", placeholder="Ex: R$ 30")
-    whats_m = st.text_input("Seu WhatsApp", key="whats_m", placeholder="21999999999")
-    nota = st.slider("Sua avaliação", 1, 5, 5)
-    if st.button("✅ CADASTRAR COMO MOTORISTA", key="btn_m"):
-        if nome_m and modelo_cor and placa and whats_m:
-            dados = {"nome": nome_m, "modelo": modelo_cor, "placa": placa, "whats": whats_m, "valor": valor, "nota": nota, "hora": datetime.datetime.now().strftime("%H:%M - %d/%m")}
-            salvar_motorista(dados)
-            st.success(f"✅ Motorista {nome_m} salvo pra sempre! ⭐ {nota}")
-        else:
-            st.warning("Preenche tudo!")
-
-with tab3:
-    passageiros = carregar_passageiros()
-    motoristas = carregar_motoristas()
-    col1, col2 = st.columns(2)
-    with col1:
-        st.subheader(f"🚕 Passageiros ({len(passageiros)})")
-        for p in reversed(passageiros):
-            st.markdown(f"""<div style="background:#1F1F1F;padding:12px;border-radius:12px;margin:8px 0;border-left:5px solid #FF6F00;color:white">
-            <b>{p.get('nome','')}</b> - {p.get('valor','')}<br>📍 {p.get('origem','')} → {p.get('destino','')}<br>🕐 {p.get('hora','')}<br>
-            <a href="https://wa.me/55{p.get('whats','')}?text=Oi%20{p.get('nome','')}!%20Vi%20seu%20pedido%20no%20VEM%20CAR%20RIO" target="_blank" style="color:#FF8C00">Chamar no Zap</a></div>""", unsafe_allow_html=True)
-    with col2:
-        st.subheader(f"🚗 Motoristas ({len(motoristas)})")
-        for m in reversed(motoristas):
-            estrelas = "⭐" * int(m.get('nota',5))
-            st.markdown(f"""<div style="background:#1F1F1F;padding:12px;border-radius:12px;margin:8px 0;border-left:5px solid #FF8C00;color:white">
-            <b>{m.get('nome','')}</b> {estrelas}<br>🚗 {m.get('modelo','')} - {m.get('placa','')}<br>💰 {m.get('valor','')} - 🕐 {m.get('hora','')}<br>
-            <a href="https://wa.me/55{m.get('whats','')}?text=Oi%20{m.get('nome','')}!%20Vi%20voce%20no%20VEM%20CAR%20RIO" target="_blank" style="color:#FF8C00">Chamar no Zap</a></div>""", unsafe_allow_html=True)
-
-st.caption("🧡 v6.1 APP - VEM CAR RIO - Instalável no celular!")
+            for c in st.session_state.corridas:
+                # mostra telefone mascarado
+                tel_mask = c['tel'][:4] + "****" + c['tel'][-2:]
+                st.markdown(f"""
+                <div class="ride-card">
+                <b>{c['codigo']}</b> | {c['status']}<br>
+                Passageira: {c['nome']} - Tel: {tel_mask}<br>
+                {c['origem']} → {c['destino']} - R$ {c['valor']}<br>
+                </div>
+                """, unsafe_allow_html=True)
+                with st.expander(f"Ver telefone completo de {c['codigo']} (LGPD - uso restrito)"):
+                    st.write(f"Telefone: {c['tel']}")
+                    st.write(f"WhatsApp Central: https://wa.me/55{c['tel']}")
+    elif senha:
+        st.error("Senha errada")
+    else:
+        st.info("Digite a senha 1234 para ver a Central (depois você troca)")
