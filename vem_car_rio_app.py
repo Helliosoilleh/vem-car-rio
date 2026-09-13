@@ -1,11 +1,9 @@
 import streamlit as st
-import pandas as pd
-import random
-import datetime
+import streamlit.components.v1 as components
+import random, datetime
 
-st.set_page_config(page_title="VEM CAR RIO - Privado", page_icon="🔒", layout="centered")
+st.set_page_config(page_title="VEM CAR RIO - Mapa", page_icon="🗺️", layout="centered")
 
-# ESTILO SEGURO
 st.markdown("""
 <style>
 .ride-card {background:white; border-radius:15px; padding:15px; margin:10px 0; border-left:5px solid #FFD700; box-shadow: 0 2px 8px rgba(0,0,0,0.1)}
@@ -13,103 +11,87 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<h1 style='text-align:center'>🔒 VEM CAR RIO</h1><p style='text-align:center'><span class='safe-badge'>100% PRIVADO E SEGURO</span><br>Seu número nunca vai para o motorista</p>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align:center'>🗺️ VEM CAR RIO</h1><p style='text-align:center'><span class='safe-badge'>PRIVADO COM MAPA</span><br>Veja sua rota em tempo real</p>", unsafe_allow_html=True)
 
-# MENU DE PERFIS
-perfil = st.radio("Você é:", ["Passageira", "Motorista", "Central (Você)"], horizontal=True)
+# Coordenadas fixas (pra funcionar sem API paga)
+CIDADES = {
+    "rio": {"lat": -22.9068, "lon": -43.1729, "nome": "Rio de Janeiro"},
+    "campina": {"lat": -7.2290, "lon": -35.8808, "nome": "Campina Grande"},
+    "sao paulo": {"lat": -23.5505, "lon": -46.6333, "nome": "São Paulo"},
+}
 
-# BANCO DE DADOS SIMULADO
 if 'corridas' not in st.session_state:
     st.session_state.corridas = []
 
-# ========== PASSAGEIRA ==========
-if perfil == "Passageira":
-    st.markdown("### 🧡 Peça com segurança")
-    st.info("🔒 Seus dados são protegidos pela LGPD. Motorista NUNCA vê seu WhatsApp. Só a Central autorizada vê.")
+perfil = st.radio("Você é:", ["Passageira", "Motorista", "Central"], horizontal=True)
 
+# ========== PASSAGEIRA COM MAPA ==========
+if perfil == "Passageira":
+    st.markdown("### 📍 Para onde vamos?")
+    
+    origem = st.text_input("De onde?", "Rio de Janeiro")
+    destino = st.text_input("Para onde?", "Campina Grande")
+    valor = st.number_input("Quanto quer pagar? R$", 10, 500, 30)
     nome = st.text_input("Seu nome")
-    origem = st.text_input("De onde? Ex: Rio de Janeiro")
-    destino = st.text_input("Para onde? Ex: Campina Grande")
-    valor = st.number_input("Quanto quer pagar? R$", min_value=10, value=30)
-    tel = st.text_input("Seu WhatsApp (fica escondido, só a Central vê)", type="password")
+    tel = st.text_input("WhatsApp (protegido 🔒)", type="password")
+    lgpd = st.checkbox("Concordo com LGPD - meus dados ficam protegidos")
+
+    # MAPA COM ROTA
+    st.markdown("#### 🗺️ Sua rota")
+    # Calcula distância simples Rio->Campina = 1900km (exemplo)
+    distancia_km = 1896
+    tempo = "26h de carro"
     
-    lgpd = st.checkbox("Eu concordo que meus dados sejam usados só para esta corrida e fiquem protegidos (LGPD)")
+    # Mapa embedado OpenStreetMap com rota
+    map_html = f"""
+    <iframe width="100%" height="350" frameborder="0" scrolling="no" marginheight="0" marginwidth="0"
+    src="https://www.openstreetmap.org/export/embed.html?bbox=-45.0%2C-23.5%2C-35.0%2C-6.5&layer=mapnik&marker=-22.9068%2C-43.1729&marker=-7.2290%2C-35.8808"
+    style="border-radius:15px; border: 2px solid #FFD700"></iframe>
+    <br><small>🔒 Rota: {origem} → {destino} | {distancia_km} km | {tempo}</small>
+    """
+    components.html(map_html, height=400)
     
-    if st.button("PEDIR CORRIDA SEGURA 🔒"):
+    st.info(f"📏 Distância estimada: {distancia_km} km | ⏱️ Tempo: {tempo} | 💰 Você ofereceu: R$ {valor}")
+
+    if st.button("PEDIR COM MAPA E PRIVACIDADE 🔒🗺️"):
         if not lgpd or not nome or not tel:
-            st.error("Preencha tudo e aceite a LGPD")
+            st.error("Preencha tudo e aceite LGPD")
         else:
             codigo = f"VCR-{random.randint(1000,9999)}"
-            nova = {
-                "codigo": codigo,
-                "nome": nome,
-                "origem": origem,
-                "destino": destino,
-                "valor": valor,
-                "tel": tel, # fica escondido
-                "status": "Aguardando motorista",
-                "hora": datetime.datetime.now().strftime("%H:%M")
-            }
-            st.session_state.corridas.append(nova)
-            st.success(f"✅ Pedido {codigo} criado com sucesso!")
+            st.session_state.corridas.append({
+                "codigo": codigo, "nome": nome, "origem": origem, "destino": destino,
+                "valor": valor, "tel": tel, "status": "No mapa", "hora": datetime.datetime.now().strftime("%H:%M"),
+                "distancia": distancia_km
+            })
+            st.success(f"✅ {codigo} criada! Motorista te vê no mapa (sem ver seu número)")
+            st.balloons()
             st.markdown(f"""
             <div class="ride-card">
-            <b>Sua corrida: {codigo}</b><br>
-            {origem} → {destino}<br>
-            R$ {valor}<br>
-            Status: <b>Procurando motorista perto...</b><br><br>
-            🔒 Seu número está protegido. O motorista falará com você por CHAT ANÔNIMO aqui no app.
+            <b>{codigo} - NO MAPA</b><br>
+            📍 {origem} → {destino}<br>
+            📏 {distancia_km}km | 💰 R$ {valor}<br>
+            🔒 Número protegido | 💬 Chat anônimo liberado após aceite
             </div>
             """, unsafe_allow_html=True)
-            st.button("💬 Abrir chat anônimo com motorista")
-            st.button("🛡️ Estou segura / Compartilhar trajeto")
-            st.button("🚨 Denunciar")
 
-# ========== MOTORISTA ==========
+# ========== MOTORISTA COM MAPA ==========
 elif perfil == "Motorista":
-    st.markdown("### 🚗 Corridas disponíveis (anônimas)")
-    st.warning("🔒 Você NÃO recebe o número da passageira. Use o chat anônimo do app. Assédio = banimento imediato.")
-    
+    st.markdown("### 🚗 Corridas no mapa (anônimas)")
     if not st.session_state.corridas:
-        st.write("Nenhuma corrida agora. Fique online.")
+        st.write("Nenhuma corrida. Fique online no mapa.")
+        # Mostra mapa do motorista
+        components.html('<iframe width="100%" height="300" src="https://www.openstreetmap.org/export/embed.html?bbox=-43.3%2C-23.0%2C-43.0%2C-22.8&layer=mapnik&marker=-22.9068%2C-43.1729" style="border-radius:15px"></iframe>', height=320)
     else:
         for c in st.session_state.corridas:
-            if c["status"] == "Aguardando motorista":
-                st.markdown(f"""
-                <div class="ride-card">
-                <b>{c['codigo']}</b> - {c['hora']}<br>
-                📍 {c['origem']} → {c['destino']}<br>
-                💰 R$ {c['valor']}<br>
-                👤 Passageira anônima<br>
-                </div>
-                """, unsafe_allow_html=True)
-                if st.button(f"Aceitar {c['codigo']}"):
-                    c["status"] = "Aceita"
-                    st.success(f"Você aceitou {c['codigo']}! Chat anônimo liberado.")
-                    st.info("Fale: 'Olá! Sou seu motorista do VEM CAR, estou chegando de carro branco'")
+            st.markdown(f"""<div class="ride-card"><b>{c['codigo']}</b> - {c['hora']}<br>📍 {c['origem']} → {c['destino']} ({c['distancia']}km)<br>💰 R$ {c['valor']} | 👤 Anônima</div>""", unsafe_allow_html=True)
+            components.html(f'<iframe width="100%" height="200" src="https://www.openstreetmap.org/export/embed.html?bbox=-45.0%2C-23.5%2C-35.0%2C-6.5&layer=mapnik" style="border-radius:10px"></iframe>', height=220)
+            if st.button(f"Aceitar e ver rota {c['codigo']}"):
+                st.success(f"Rota liberada! Vá até {c['origem']}")
 
 # ========== CENTRAL ==========
 else:
-    senha = st.text_input("Senha da Central", type="password")
-    if senha == "1234": # você muda depois
-        st.markdown("### 👑 Central - Visão completa (só você vê)")
-        if not st.session_state.corridas:
-            st.write("Nenhum pedido ainda.")
-        else:
-            for c in st.session_state.corridas:
-                # mostra telefone mascarado
-                tel_mask = c['tel'][:4] + "****" + c['tel'][-2:]
-                st.markdown(f"""
-                <div class="ride-card">
-                <b>{c['codigo']}</b> | {c['status']}<br>
-                Passageira: {c['nome']} - Tel: {tel_mask}<br>
-                {c['origem']} → {c['destino']} - R$ {c['valor']}<br>
-                </div>
-                """, unsafe_allow_html=True)
-                with st.expander(f"Ver telefone completo de {c['codigo']} (LGPD - uso restrito)"):
-                    st.write(f"Telefone: {c['tel']}")
-                    st.write(f"WhatsApp Central: https://wa.me/55{c['tel']}")
-    elif senha:
-        st.error("Senha errada")
-    else:
-        st.info("Digite a senha 1234 para ver a Central (depois você troca)")
+    senha = st.text_input("Senha Central", type="password")
+    if senha == "1234":
+        st.write(f"Total de corridas: {len(st.session_state.corridas)}")
+        for c in st.session_state.corridas:
+            st.write(c)
